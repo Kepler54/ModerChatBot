@@ -1,9 +1,9 @@
-import os
-import asyncio
-import logging
+from os import getenv
+from asyncio import run
 from dotenv import load_dotenv
 from bot import handlers_register
 from aiogram import Bot, Dispatcher
+from logging import basicConfig, INFO
 
 
 def register(dp: Dispatcher):
@@ -11,15 +11,16 @@ def register(dp: Dispatcher):
 
 
 async def main():
-    logging.basicConfig(level=logging.INFO)
+    basicConfig(level=INFO)
     load_dotenv('.env')
-    token = os.getenv('token')
+    token = getenv('token')
     bot = Bot(token)
     dp = Dispatcher(bot)
     register(dp)
 
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling()
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    run(main())
