@@ -13,10 +13,14 @@ class AdminFilter(BoundFilter):
         return member.is_chat_admin()
 
 
-class ReplyFilter(BoundFilter):
+class ReplyChatFilter(BoundFilter):
     async def check(self, message: types.Message):
         try:
-            if message.reply_to_message.from_user.id == message.bot.id:
-                return True
+            if message.from_user.id != message.chat.id:
+                if message.reply_to_message.from_user.id == message.bot.id:
+                    return True
+            else:
+                if message.from_user.id == message.chat.id:
+                    return True
         except AttributeError:
             pass

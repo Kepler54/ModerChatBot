@@ -50,12 +50,3 @@ class SystemFiles:
         except FileNotFoundError:
             with open('obscenewords.spec', 'w') as obscene_words_write:
                 obscene_words_write.write('"хуй", ')
-
-    @staticmethod
-    def reaction_reading():
-        try:
-            with open('reaction.spec', encoding='utf-8') as reaction:
-                return literal_eval('{' + reaction.read() + '}')
-        except FileNotFoundError:
-            with open('reaction.spec', 'w') as reaction_write:
-                reaction_write.write('"глад валакас": "ЯБ ДАБ ДАБ ДАБ", ')
