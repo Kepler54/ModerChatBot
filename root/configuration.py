@@ -6,7 +6,7 @@ class SystemFiles:
 
     @staticmethod
     def help_list():
-        return "/star — начало работы\n/help — информация\n#ban — забанить кого-то\ndice — кубик"
+        return "/start — начало работы\n/help — информация\n#ban — забанить кого-то\ndice — кубик"
 
     @staticmethod
     def answer():

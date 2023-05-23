@@ -14,15 +14,23 @@ def handlers_register(dp: Dispatcher):
     @dp.message_handler(commands=['start'])
     async def start(message: types.Message):
         try:
-            await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[1])
+            await message.bot.send_sticker(message.from_user.id, sticker=sf.sticker_reading()[1])
+            await message.bot.send_message(message.from_user.id, sf.help_list())
             await message.delete()
         except BotBlocked:
             pass
 
     @dp.message_handler(commands=['help'])
     async def help_me(message: types.Message):
-        await message.answer(sf.help_list())
-        await message.delete()
+        try:
+            await message.bot.send_message(message.from_user.id, sf.help_list())
+            await message.bot.send_message(
+                message.from_user.id,
+                "P.S. Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить."
+            )
+            await message.delete()
+        except BotBlocked:
+            pass
 
     @dp.message_handler(admin=True, commands='ban', commands_prefix='#')
     async def ban(message: types.Message):
