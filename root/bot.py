@@ -2,9 +2,12 @@ from random import randint
 from configuration import SystemFiles
 from aiogram import Dispatcher, types
 from filters import ReplyChatFilter, AdminFilter
-from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, MessageToDeleteNotFound, NetworkError
+from keyboards import KeyboardRandom
+from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, \
+    MessageToDeleteNotFound, NetworkError, MessageNotModified, RetryAfter
 
 sf = SystemFiles()
+kr = KeyboardRandom()
 group_id = sf.group_id_reading()
 
 
@@ -31,6 +34,26 @@ def handlers_register(dp: Dispatcher):
             await message.delete()
         except BotBlocked:
             pass
+
+    @dp.message_handler(commands=['random'])
+    async def random_value(message: types.Message):
+        await message.bot.send_message(
+            chat_id=message.chat.id, text=f'Случайное число: {randint(0, 100)}', reply_markup=kr.inline_keyboard
+        )
+        await message.delete()
+
+    @dp.callback_query_handler(text='random')
+    async def callback_function(callback: types.CallbackQuery):
+        try:
+            await callback.message.edit_text(f'Случайное число: {randint(0, 100)}', reply_markup=kr.inline_keyboard)
+        except MessageNotModified:
+            pass
+        except RetryAfter:
+            pass
+
+    @dp.callback_query_handler(text='close')
+    async def callback_close(callback: types.CallbackQuery):
+        await callback.message.delete()
 
     @dp.message_handler(admin=True, commands='ban', commands_prefix='#')
     async def ban(message: types.Message):

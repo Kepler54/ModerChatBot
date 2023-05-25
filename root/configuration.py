@@ -6,7 +6,11 @@ class SystemFiles:
 
     @staticmethod
     def help_list():
-        return "/start — начало работы\n/help — информация\n#ban — забанить кого-то\ndice — кубик"
+        return "/start — начало работы\n" \
+               "/help — информация\n" \
+               "/random — случайное число\n" \
+               "#ban — забанить кого-то\n" \
+               "кубик — игральная кость"
 
     @staticmethod
     def answer():
