@@ -1,4 +1,3 @@
-from random import randint
 from ast import literal_eval
 
 
@@ -8,14 +7,15 @@ class SystemFiles:
     def help_list():
         return "/start — начало работы\n" \
                "/help — информация\n" \
+               "/rps — камень, ножницы, бумага\n" \
                "/random — случайное число\n" \
                "#ban — забанить кого-то\n" \
                "кубик — игральная кость"
 
     @staticmethod
-    def answer():
+    def obscene_words_answer():
         answer_list = ("А?", "ШО?", "САМ!", "ИЗВИНИСЬ!", "ТЮ БЛЯ!", "ДА ТЫ ШО!")
-        return answer_list[randint(0, 5)]
+        return answer_list
 
     @staticmethod
     def group_id_reading():
