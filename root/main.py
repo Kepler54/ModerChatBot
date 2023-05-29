@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from bot import handlers_register
 from aiogram import Bot, Dispatcher
 from logging import basicConfig, INFO
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 
 def register(dp: Dispatcher):
@@ -15,7 +16,8 @@ async def main():
     load_dotenv('.env')
     token = getenv('token')
     bot = Bot(token)
-    dp = Dispatcher(bot)
+    storage = MemoryStorage()
+    dp = Dispatcher(bot=bot, storage=storage)
     register(dp)
 
     await bot.delete_webhook(drop_pending_updates=True)

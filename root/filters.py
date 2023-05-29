@@ -1,5 +1,8 @@
 from aiogram import types
+from keyboards import KeyboardRandom
 from aiogram.dispatcher.filters import BoundFilter
+
+kr = KeyboardRandom()
 
 
 class AdminFilter(BoundFilter):
@@ -24,3 +27,15 @@ class ReplyChatFilter(BoundFilter):
                     return True
         except AttributeError:
             pass
+
+
+class IntegerFilter(BoundFilter):
+    async def check(self, message: types.Message):
+        try:
+            if int(message.text):
+                return True
+        except ValueError:
+            await message.reply(
+                text=f'"{message.text}" — неверный ввод! Введи целое число!',
+                reply_markup=kr.inline_keyboard
+            )

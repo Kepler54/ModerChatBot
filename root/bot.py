@@ -1,14 +1,15 @@
 from random import randint
-from configuration import SystemFiles
+from keyboards import KeyboardRandom
 from aiogram import Dispatcher, types
-from filters import ReplyChatFilter, AdminFilter
-from keyboards import KeyboardRandom, KeyboardRockPaperScissors
+from aiogram.dispatcher import FSMContext
+from configuration import SystemFiles, UserStatesGroup
+from filters import ReplyChatFilter, AdminFilter, IntegerFilter
 from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, \
     MessageToDeleteNotFound, NetworkError, MessageNotModified, RetryAfter
 
 sf = SystemFiles()
 kr = KeyboardRandom()
-krps = KeyboardRockPaperScissors()
+usg = UserStatesGroup()
 group_id = sf.group_id_reading()
 
 
@@ -32,25 +33,27 @@ def handlers_register(dp: Dispatcher):
         )
         await message.delete()
 
-    """Keyboard random function"""
+    """Random function"""
 
     @dp.message_handler(commands=["random"])
     async def random_value(message: types.Message):
-        await message.bot.send_message(
-            chat_id=message.chat.id, text=f'Случайное число: {randint(0, 100)}', reply_markup=kr.inline_keyboard
-        )
-        await message.delete()
+        await message.reply(text="Выбери диапазон генерации случайного числа от 0 и до ...")
+        await usg.range_value.set()
 
-    @dp.callback_query_handler(text="random")
-    async def callback_function(callback: types.CallbackQuery):
-        await callback.message.edit_text(f'Случайное число: {randint(0, 100)}', reply_markup=kr.inline_keyboard)
+    @dp.message_handler(IntegerFilter(), state=usg.range_value)
+    async def save_range_value(message: types.Message, state: FSMContext):
+        async with state.proxy() as data:
+            data["range_value"] = message.text
+            await message.reply(text=f'Случайное число: {randint(0, int(data["range_value"]))}')
+        await state.finish()
 
-    """Keyboard Rock Paper Scissors function"""
+    """Callback cancel function"""
 
-    """Callback close function"""
-
-    @dp.callback_query_handler(text="close")
-    async def callback_close(callback: types.CallbackQuery):
+    @dp.callback_query_handler(text="cancel", state="*")
+    async def callback_cancel(callback: types.CallbackQuery, state: FSMContext):
+        if state is None:
+            return
+        await state.finish()
         await callback.message.delete()
 
     """Ban function"""

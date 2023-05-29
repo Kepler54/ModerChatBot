@@ -1,4 +1,9 @@
 from ast import literal_eval
+from aiogram.dispatcher.filters.state import StatesGroup, State
+
+
+class UserStatesGroup(StatesGroup):
+    range_value = State()
 
 
 class SystemFiles:
@@ -7,7 +12,6 @@ class SystemFiles:
     def help_list():
         return "/start — начало работы\n" \
                "/help — информация\n" \
-               "/rps — камень, ножницы, бумага\n" \
                "/random — случайное число\n" \
                "#ban — забанить кого-то\n" \
                "кубик — игральная кость"
