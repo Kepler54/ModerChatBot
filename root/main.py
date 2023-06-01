@@ -7,11 +7,12 @@ from logging import basicConfig, INFO
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 
-def register(dp: Dispatcher):
+def register(dp: Dispatcher) -> None:
     handlers_register(dp)
 
 
-async def main():
+async def main() -> None:
+    """Entry point"""
     basicConfig(level=INFO)
     load_dotenv('.env')
     token = getenv('token')

@@ -3,13 +3,15 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
 class UserStatesGroup(StatesGroup):
+    """User state machine"""
     range_value = State()
 
 
 class SystemFiles:
+    """Different support functions"""
 
     @staticmethod
-    def help_list():
+    def help_list() -> str:
         return "/start — начало работы\n" \
                "/help — информация\n" \
                "/random — случайное число\n" \
@@ -17,12 +19,12 @@ class SystemFiles:
                "кубик — игральная кость"
 
     @staticmethod
-    def obscene_words_answer():
+    def obscene_words_answer() -> tuple:
         answer_list = ("А?", "ШО?", "САМ!", "ИЗВИНИСЬ!", "ТЮ БЛЯ!", "ДА ТЫ ШО!")
         return answer_list
 
     @staticmethod
-    def group_id_reading():
+    def group_id_reading() -> str:
         try:
             with open('group_id.spec', encoding='utf-8') as group_id:
                 return literal_eval(group_id.read())
@@ -31,7 +33,7 @@ class SystemFiles:
                 conversation_write.write("''")
 
     @staticmethod
-    def sticker_reading():
+    def sticker_reading() -> tuple:
         try:
             with open('stickers.spec') as stickers:
                 return literal_eval(f'({stickers.read()})')
@@ -42,7 +44,7 @@ class SystemFiles:
             pass
 
     @staticmethod
-    def conversation_reading():
+    def conversation_reading() -> dict:
         try:
             with open('conversation.spec', encoding='utf-8') as conversation:
                 return literal_eval('{' + conversation.read() + '}')
@@ -51,7 +53,7 @@ class SystemFiles:
                 conversation_write.write('"хай": "ХАЙ", ')
 
     @staticmethod
-    def obscene_words_reading():
+    def obscene_words_reading() -> tuple:
         try:
             with open('obscenewords.spec', encoding='utf-8') as obscene_words:
                 return literal_eval(f'({obscene_words.read()})')
