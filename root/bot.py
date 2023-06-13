@@ -1,4 +1,5 @@
 from random import randint
+from aiohttp import ClientOSError
 from keyboards import KeyboardRandom
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -171,5 +172,10 @@ def handlers_register(dp: Dispatcher) -> None:
 
     @dp.errors_handler(exception=AttributeError)
     async def exception_attribute_error(update: types.update, exception: AttributeError) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=ClientOSError)
+    async def exception_client_os_error(update: types.update, exception: ClientOSError) -> bool:
         """Exception"""
         return True
