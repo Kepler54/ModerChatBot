@@ -20,17 +20,8 @@ class SystemFiles:
 
     @staticmethod
     def obscene_words_answer() -> tuple:
-        answer_list = ("А?", "ШО?", "САМ!", "ИЗВИНИСЬ!", "ТЮ БЛЯ!", "ДА ТЫ ШО!")
+        answer_list = ("А?", "ШО?", "САМ!", "ИЗВИНИСЬ!", "ТЮ МЛЯ!", "ДА ТЫ ШО!")
         return answer_list
-
-    @staticmethod
-    def group_id_reading() -> str:
-        try:
-            with open('group_id.spec', encoding='utf-8') as group_id:
-                return literal_eval(group_id.read())
-        except FileNotFoundError:
-            with open('group_id.spec', 'w') as conversation_write:
-                conversation_write.write("''")
 
     @staticmethod
     def sticker_reading() -> tuple:
@@ -59,4 +50,4 @@ class SystemFiles:
                 return literal_eval(f'({obscene_words.read()})')
         except FileNotFoundError:
             with open('obscenewords.spec', 'w') as obscene_words_write:
-                obscene_words_write.write('"хуй", ')
+                obscene_words_write.write('"блядь", ')

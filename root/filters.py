@@ -41,6 +41,6 @@ class IntegerFilter(BoundFilter):
                 return True
         except ValueError:
             await message.reply(
-                text=f'"{message.text}" — неверный ввод! Введи целое число!',
+                text=f'"{message.text}" — НЕ ЩИТАИТСЯ! НУЖНО ВВЕСТИ ЦЕЛОЕ ЧИСЛО!',
                 reply_markup=kr.inline_keyboard
             )

@@ -6,12 +6,12 @@ from aiogram.dispatcher import FSMContext
 from configuration import SystemFiles, UserStatesGroup
 from filters import ReplyChatFilter, AdminFilter, IntegerFilter
 from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, \
-    MessageToDeleteNotFound, NetworkError, MessageNotModified, RetryAfter
+    MessageToDeleteNotFound, NetworkError, MessageNotModified, RetryAfter, \
+    MessageCantBeDeleted, BadRequest, Unauthorized, ChatAdminRequired
 
 sf = SystemFiles()
 kr = KeyboardRandom()
 usg = UserStatesGroup()
-group_id = sf.group_id_reading()
 
 
 def handlers_register(dp: Dispatcher) -> None:
@@ -78,12 +78,12 @@ def handlers_register(dp: Dispatcher) -> None:
         :param message: message object
         :return: None
         """
-        await message.bot.delete_message(group_id, message.message_id)
+        await message.bot.delete_message(message.chat.id, message.message_id)
         try:
-            await message.bot.kick_chat_member(chat_id=group_id, user_id=message.reply_to_message.from_user.id)
+            await message.bot.kick_chat_member(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id)
             await message.reply_to_message.reply("БАН!")
             await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[0])
-        except CantRestrictSelf:
+        except (CantRestrictSelf, ChatAdminRequired):
             await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
             await message.answer("Я НИ МАГУ ЗАБАНИТЬ САМ СИБЯ! ЭТА КАКОЙ ТА БРЭД!")
 
@@ -177,5 +177,20 @@ def handlers_register(dp: Dispatcher) -> None:
 
     @dp.errors_handler(exception=ClientOSError)
     async def exception_client_os_error(update: types.update, exception: ClientOSError) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=MessageCantBeDeleted)
+    async def message_cant_be_deleted(update: types.update, exception: MessageCantBeDeleted) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=BadRequest)
+    async def bad_request(update: types.update, exception: BadRequest) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=Unauthorized)
+    async def unauthorized(update: types.update, exception: Unauthorized) -> bool:
         """Exception"""
         return True
