@@ -29,12 +29,8 @@ def handlers_register(dp: Dispatcher) -> None:
     @dp.message_handler(commands=["help"])
     async def help_me(message: types.Message) -> None:
         """Help"""
-        await message.bot.send_message(message.from_user.id, sf.help_list())
-        await message.bot.send_message(
-            message.from_user.id,
-            "Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить."
-        )
-        await message.delete()
+        await message.reply(sf.help_list())
+        await message.reply("Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить.")
 
     @dp.message_handler(commands=["random"])
     async def random_value(message: types.Message) -> None:

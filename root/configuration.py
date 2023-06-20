@@ -13,12 +13,14 @@ class SystemFiles:
 
     @staticmethod
     def help_list() -> str:
-        return "/start — начало работы\n" \
+        return "Функции пользователя:\n" \
+               "\n/start — начало работы\n" \
                "/help — информация\n" \
                "/random — случайное число\n" \
-               "/word — добавить слово в чс\n" \
-               "#ban — забанить кого-то\n" \
-               "кубик — игральная кость"
+               "кубик — игральная кость\n" \
+               "\nФункции пользователя и чата:\n" \
+               "\n/word — добавить слово в чс\n" \
+               "#ban — забанить кого-то\n"
 
     @staticmethod
     def obscene_words_answer() -> tuple:
