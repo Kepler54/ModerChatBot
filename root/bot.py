@@ -32,8 +32,7 @@ def handlers_register(dp: Dispatcher) -> None:
         await message.bot.send_message(message.from_user.id, sf.help_list())
         await message.bot.send_message(
             message.from_user.id,
-            "Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить.\n"
-            "\nОбратная связь: keplerpocket@proton.me"
+            "Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить."
         )
         await message.delete()
 
