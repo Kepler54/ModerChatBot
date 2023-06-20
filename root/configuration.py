@@ -5,6 +5,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 class UserStatesGroup(StatesGroup):
     """User state machine"""
     range_value = State()
+    add_word = State()
 
 
 class SystemFiles:
@@ -15,6 +16,7 @@ class SystemFiles:
         return "/start — начало работы\n" \
                "/help — информация\n" \
                "/random — случайное число\n" \
+               "/word — добавить слово в чс\n" \
                "#ban — забанить кого-то\n" \
                "кубик — игральная кость"
 
@@ -42,12 +44,3 @@ class SystemFiles:
         except FileNotFoundError:
             with open('conversation.spec', 'w') as conversation_write:
                 conversation_write.write('"хай": "ХАЙ", ')
-
-    @staticmethod
-    def obscene_words_reading() -> tuple:
-        try:
-            with open('obscenewords.spec', encoding='utf-8') as obscene_words:
-                return literal_eval(f'({obscene_words.read()})')
-        except FileNotFoundError:
-            with open('obscenewords.spec', 'w') as obscene_words_write:
-                obscene_words_write.write('"блядь", ')

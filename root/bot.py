@@ -1,4 +1,5 @@
 from random import randint
+from ast import literal_eval
 from aiohttp import ClientOSError
 from keyboards import KeyboardRandom
 from aiogram import Dispatcher, types
@@ -31,41 +32,49 @@ def handlers_register(dp: Dispatcher) -> None:
         await message.bot.send_message(message.from_user.id, sf.help_list())
         await message.bot.send_message(
             message.from_user.id,
-            "P.S. Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить."
+            "Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить.\n"
+            "\nОбратная связь: keplerpocket@proton.me"
         )
         await message.delete()
 
     @dp.message_handler(commands=["random"])
     async def random_value(message: types.Message) -> None:
-        """
-        Random function
-        :param message: message object
-        :return: None
-        """
-        await message.reply(text="Выбери диапазон генерации случайного числа от 0 и до ...")
+        """Random function"""
+        await message.reply(
+            text="Выбери диапазон генерации случайного числа от 0 и до ...",
+            reply_markup=kr.inline_keyboard)
         await usg.range_value.set()
+        await message.delete()
 
     @dp.message_handler(IntegerFilter(), state=usg.range_value)
     async def save_range_value(message: types.Message, state: FSMContext) -> None:
-        """
-        Random function
-        :param message: message object
-        :param state: state object
-        :return: None
-        """
+        """Random function"""
         async with state.proxy() as data:
             data["range_value"] = message.text
             await message.reply(text=f'Случайное число: {randint(0, int(data["range_value"]))}')
         await state.finish()
 
-    @dp.callback_query_handler(text="cancel", state="*")
+    @dp.message_handler(admin=True, commands=["word"])
+    async def word_input(message: types.Message) -> None:
+        """Obscene word input function"""
+        await message.reply("Введи нежелательное слово...", reply_markup=kr.inline_keyboard)
+        await usg.add_word.set()
+        await message.delete()
+
+    @dp.message_handler(state=usg.add_word)
+    async def word_write(message: types.Message, state: FSMContext) -> None:
+        """Obscene word write function"""
+        async with state.proxy() as data:
+            data["range_value"] = message.text.lower()
+            with open(f'chats/{message.chat.id}.spec', 'a') as obscene_words_write:
+                obscene_words_write.write(f' "{data["range_value"]}",')
+            await message.reply(text="Слово добавлено в чёрный список!")
+        await state.finish()
+        await message.delete()
+
+    @dp.callback_query_handler(text="close", state="*")
     async def callback_cancel(callback: types.CallbackQuery, state: FSMContext) -> None:
-        """
-        Callback cancel function
-        :param callback: callback object
-        :param state: state object
-        :return: None
-        """
+        """Callback cancel function"""
         if state is None:
             return
         await state.finish()
@@ -73,11 +82,7 @@ def handlers_register(dp: Dispatcher) -> None:
 
     @dp.message_handler(admin=True, commands="ban", commands_prefix="#")
     async def ban(message: types.Message) -> None:
-        """
-        Ban function
-        :param message: message object
-        :return: None
-        """
+        """Ban function"""
         await message.bot.delete_message(message.chat.id, message.message_id)
         try:
             await message.bot.kick_chat_member(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id)
@@ -89,40 +94,37 @@ def handlers_register(dp: Dispatcher) -> None:
 
     @dp.message_handler(ReplyChatFilter(), content_types="sticker")
     async def sticker_from_user(message: types.Message) -> None:
-        """
-        Sticker function
-        :param message: message object
-        :return: None
-        """
+        """Sticker function"""
         await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
 
     @dp.message_handler(ReplyChatFilter(), lambda message: message.text.lower() == "кубик")
     async def dice(message: types.Message) -> None:
-        """
-        Dice function
-        :param message: message object
-        :return: None
-        """
+        """Dice function"""
         await message.answer_dice()
 
     @dp.message_handler(ReplyChatFilter())
     async def conversation(message: types.Message) -> None:
-        """
-        Conversation function and obscene words filter
-        :param message: message object
-        :return: None
-        """
+        """Conversation function and obscene words filter"""
         for i in sf.conversation_reading():
             if i in message.text.lower():
                 await message.reply(sf.conversation_reading()[i])
         counter = 0
-        for i in sf.obscene_words_reading():
-            if i in message.text.lower():
-                counter += 1
-                if counter == 1:
-                    await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
-                    await message.answer(sf.obscene_words_answer()[randint(0, 5)])
-                await message.delete()
+
+        try:
+            with open(f'chats/{message.chat.id}.spec', encoding='utf-8') as obscene_words:
+                words = literal_eval(f'({obscene_words.read()})')
+
+            for i in words:
+                if i in message.text.lower():
+                    counter += 1
+                    if counter == 1:
+                        await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
+                        await message.answer(sf.obscene_words_answer()[randint(0, 5)])
+                    await message.delete()
+
+        except FileNotFoundError:
+            with open(f'chats/{message.chat.id}.spec', 'w') as obscene_words_write:
+                obscene_words_write.write('')
 
         if message.text.lower() == "кто тебя создал?" or message.text.lower() == "кто твой разработчик?" or \
                 message.text.lower() == "кто твой создатель?" or message.text.lower() == "кто твой автор?" or \
@@ -131,19 +133,24 @@ def handlers_register(dp: Dispatcher) -> None:
 
     @dp.message_handler()
     async def obscene_words_function(message: types.Message) -> None:
-        """
-        Obscene words filter
-        :param message: message object
-        :return: None
-        """
+        """Obscene words filter"""
         counter = 0
-        for i in sf.obscene_words_reading():
-            if i in message.text.lower():
-                counter += 1
-                if counter == 1:
-                    await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
-                    await message.answer(sf.obscene_words_answer()[randint(0, 5)])
-                await message.delete()
+
+        try:
+            with open(f'chats/{message.chat.id}.spec', encoding='utf-8') as obscene_words:
+                words = literal_eval(f'({obscene_words.read()})')
+
+            for i in words:
+                if i in message.text.lower():
+                    counter += 1
+                    if counter == 1:
+                        await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
+                        await message.answer(sf.obscene_words_answer()[randint(0, 5)])
+                    await message.delete()
+
+        except FileNotFoundError:
+            with open(f'chats/{message.chat.id}.spec', 'w') as obscene_words_write:
+                obscene_words_write.write('')
 
     @dp.errors_handler(exception=BotBlocked)
     async def exception_blocked(update: types.update, exception: BotBlocked) -> bool:
