@@ -1,28 +1,40 @@
+from os import listdir
+from asyncio import sleep
 from random import randint
 from ast import literal_eval
 from aiohttp import ClientOSError
 from keyboards import KeyboardRandom
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
+from asyncio.exceptions import TimeoutError
 from configuration import SystemFiles, UserStatesGroup
-from filters import ReplyChatFilter, AdminFilter, IntegerFilter
+from filters import ReplyChatFilter, CreatorAdminFilter, IntegerFilter
 from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, \
     MessageToDeleteNotFound, NetworkError, MessageNotModified, RetryAfter, \
-    MessageCantBeDeleted, BadRequest, Unauthorized, ChatAdminRequired
+    MessageCantBeDeleted, BadRequest, Unauthorized, ChatAdminRequired, TelegramAPIError
 
 sf = SystemFiles()
 kr = KeyboardRandom()
 usg = UserStatesGroup()
 
+seconds_list = [17634, 21138, 24895, 28325, 32178, 35728]
+image_list = []
+catalog = listdir("images/")
+for img in catalog:
+    image_list.append(img)
+
 
 def handlers_register(dp: Dispatcher) -> None:
     """Register handlers"""
-    dp.filters_factory.bind(AdminFilter)
+    dp.filters_factory.bind(CreatorAdminFilter)
 
     @dp.message_handler(commands=["start"])
     async def start(message: types.Message) -> None:
         """Start"""
-        await message.bot.send_sticker(message.from_user.id, sticker=sf.sticker_reading()[1])
+        try:
+            await message.bot.send_sticker(message.from_user.id, sticker=sf.sticker_reading()[1])
+        except IndexError:
+            pass
         await message.bot.send_message(message.from_user.id, sf.help_list())
         await message.delete()
 
@@ -49,7 +61,7 @@ def handlers_register(dp: Dispatcher) -> None:
             await message.reply(text=f'Случайное число: {randint(0, int(data["range_value"]))}')
         await state.finish()
 
-    @dp.message_handler(admin=True, commands=["word"])
+    @dp.message_handler(creator=True, commands=["word"])
     async def word_input(message: types.Message) -> None:
         """Obscene word input function"""
         await message.reply("Введи нежелательное слово...", reply_markup=kr.inline_keyboard)
@@ -75,22 +87,63 @@ def handlers_register(dp: Dispatcher) -> None:
         await state.finish()
         await callback.message.delete()
 
-    @dp.message_handler(admin=True, commands="ban", commands_prefix="#")
+    @dp.message_handler(creator=True, commands="ban", commands_prefix="#")
     async def ban(message: types.Message) -> None:
         """Ban function"""
         await message.bot.delete_message(message.chat.id, message.message_id)
         try:
             await message.bot.kick_chat_member(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id)
             await message.reply_to_message.reply("БАН!")
-            await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[0])
-        except (CantRestrictSelf, ChatAdminRequired):
-            await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
-            await message.answer("Я НИ МАГУ ЗАБАНИТЬ САМ СИБЯ! ЭТА КАКОЙ ТА БРЭД!")
+            await message.bot.send_sticker(chat_id=message.chat.id, sticker=sf.sticker_reading()[0])
+        except (CantRestrictSelf, ChatAdminRequired, IndexError):
+            pass
+
+    @dp.message_handler(creator=True, commands=["post"])
+    async def get_post(message: types.Message) -> None:
+        """A new post function"""
+        await message.delete()
+        while True:
+            try:
+                await sleep(1)
+                await message.bot.send_sticker(
+                    chat_id=message.chat.id,
+                    disable_notification=True,
+                    sticker=sf.sticker_for_post()[randint(0, len(sf.sticker_for_post()) - 1)]
+                )
+            except ValueError:
+                pass
+            try:
+                image = f"images/{image_list[randint(0, len(catalog) - 1)]}"
+                await sleep(seconds_list[randint(0, 5)])
+                await message.bot.send_photo(
+                    chat_id=message.chat.id,
+                    disable_notification=True,
+                    photo=open(image, "rb"),
+                    caption=sf.img_format(image)
+                )
+            except ValueError:
+                pass
+            try:
+                await sleep(seconds_list[randint(0, 5)])
+                await message.bot.send_message(
+                    chat_id=message.chat.id,
+                    disable_notification=True,
+                    text=sf.conversation_for_post()[randint(0, len(sf.conversation_for_post()) - 1)]
+                )
+            except ValueError:
+                pass
+
+            await sleep(seconds_list[randint(0, 5)])
 
     @dp.message_handler(ReplyChatFilter(), content_types="sticker")
     async def sticker_from_user(message: types.Message) -> None:
         """Sticker function"""
-        await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
+        try:
+            await message.bot.send_sticker(
+                chat_id=message.chat.id, sticker=sf.sticker_reading()[randint(2, len(sf.sticker_reading()) - 1)]
+            )
+        except ValueError:
+            pass
 
     @dp.message_handler(ReplyChatFilter(), lambda message: message.text.lower() == "кубик")
     async def dice(message: types.Message) -> None:
@@ -113,8 +166,16 @@ def handlers_register(dp: Dispatcher) -> None:
                 if i in message.text.lower():
                     counter += 1
                     if counter == 1:
-                        await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
-                        await message.answer(sf.obscene_words_answer()[randint(0, 5)])
+                        try:
+                            await message.bot.send_sticker(
+                                chat_id=message.chat.id,
+                                sticker=sf.sticker_reading()[randint(2, len(sf.sticker_reading()) - 1)]
+                            )
+                        except ValueError:
+                            pass
+                        await message.answer(
+                            sf.obscene_words_answer()[randint(0, len(sf.obscene_words_answer()) - 1)]
+                        )
                     await message.delete()
 
         except FileNotFoundError:
@@ -139,8 +200,16 @@ def handlers_register(dp: Dispatcher) -> None:
                 if i in message.text.lower():
                     counter += 1
                     if counter == 1:
-                        await message.bot.send_sticker(message.chat.id, sticker=sf.sticker_reading()[randint(2, 11)])
-                        await message.answer(sf.obscene_words_answer()[randint(0, 5)])
+                        try:
+                            await message.bot.send_sticker(
+                                chat_id=message.chat.id,
+                                sticker=sf.sticker_reading()[randint(2, len(sf.sticker_reading()) - 1)]
+                            )
+                        except ValueError:
+                            pass
+                        await message.answer(
+                            sf.obscene_words_answer()[randint(0, len(sf.obscene_words_answer()) - 1)]
+                        )
                     await message.delete()
 
         except FileNotFoundError:
@@ -172,11 +241,6 @@ def handlers_register(dp: Dispatcher) -> None:
         """Exception"""
         return True
 
-    @dp.errors_handler(exception=AttributeError)
-    async def exception_attribute_error(update: types.update, exception: AttributeError) -> bool:
-        """Exception"""
-        return True
-
     @dp.errors_handler(exception=ClientOSError)
     async def exception_client_os_error(update: types.update, exception: ClientOSError) -> bool:
         """Exception"""
@@ -194,5 +258,25 @@ def handlers_register(dp: Dispatcher) -> None:
 
     @dp.errors_handler(exception=Unauthorized)
     async def unauthorized(update: types.update, exception: Unauthorized) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=TimeoutError)
+    async def exception_timeout_error(update: types.update, exception: TimeoutError) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=TelegramAPIError)
+    async def exception_telegram_api_error(update: types.update, exception: TelegramAPIError) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=AttributeError)
+    async def exception_attribute_error(update: types.update, exception: AttributeError) -> bool:
+        """Exception"""
+        return True
+
+    @dp.errors_handler(exception=TypeError)
+    async def type_error(update: types.update, exception: TypeError) -> bool:
         """Exception"""
         return True

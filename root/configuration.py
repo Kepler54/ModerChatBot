@@ -17,6 +17,7 @@ class SystemFiles:
                "\n/start — начало работы\n" \
                "/help — информация\n" \
                "/random — случайное число\n" \
+               "/post — активация постов\n" \
                "кубик — игральная кость\n" \
                "\nФункции чата:\n" \
                "\n/word — добавить слово в чс\n" \
@@ -32,10 +33,15 @@ class SystemFiles:
         try:
             with open('stickers.spec') as stickers:
                 return literal_eval(f'({stickers.read()})')
-        except FileNotFoundError:
-            with open('stickers.spec', 'w') as stickers_write:
-                stickers_write.write("'CAACAgIAAxkBAAEI941kX3KFR0-D7HglAtk3vuBAqKeQDgACawAD9pS1FCzORHN4WTW_LwQ', ")
-        except IndexError:
+        except (FileNotFoundError, IndexError):
+            pass
+
+    @staticmethod
+    def sticker_for_post() -> tuple:
+        try:
+            with open('sticker_for_post.spec') as sticker_for_post:
+                return literal_eval(f'({sticker_for_post.read()})')
+        except (FileNotFoundError, IndexError):
             pass
 
     @staticmethod
@@ -43,6 +49,20 @@ class SystemFiles:
         try:
             with open('conversation.spec', encoding='utf-8') as conversation:
                 return literal_eval('{' + conversation.read() + '}')
-        except FileNotFoundError:
-            with open('conversation.spec', 'w') as conversation_write:
-                conversation_write.write('"хай": "ХАЙ", ')
+        except (FileNotFoundError, IndexError):
+            pass
+
+    @staticmethod
+    def conversation_for_post() -> tuple:
+        try:
+            with open('conversation_for_post.spec', encoding='utf-8') as conversation_for_post:
+                return literal_eval(f'({conversation_for_post.read()})')
+        except (FileNotFoundError, IndexError):
+            pass
+
+    @staticmethod
+    def img_format(image) -> str:
+        """Format of image delete function"""
+        if str(image).endswith("jpeg"):
+            return str(image[7:-5])
+        return str(image[7:-4])

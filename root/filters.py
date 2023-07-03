@@ -5,12 +5,12 @@ from aiogram.dispatcher.filters import BoundFilter
 kr = KeyboardRandom()
 
 
-class AdminFilter(BoundFilter):
-    """Filtering of the admin user"""
-    key = 'admin'
+class CreatorAdminFilter(BoundFilter):
+    """Filtering of the creator or admin user"""
+    key = 'creator'
 
-    def __init__(self, admin):
-        self.admin = admin
+    def __init__(self, creator):
+        self.creator = creator
 
     async def check(self, message: types.Message) -> object:
         member = await message.bot.get_chat_member(message.chat.id, message.from_user.id)
