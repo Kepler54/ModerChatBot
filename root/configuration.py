@@ -25,11 +25,13 @@ class SystemFiles:
 
     @staticmethod
     def obscene_words_answer() -> tuple:
+        """Bot random answer function"""
         answer_list = ("А?", "ШО?", "САМ!", "ИЗВИНИСЬ!", "ТЮ МЛЯ!", "ДА ТЫ ШО!")
         return answer_list
 
     @staticmethod
     def sticker_reading() -> tuple:
+        """Bot answer with sticker in the post"""
         try:
             with open('stickers.spec') as stickers:
                 return literal_eval(f'({stickers.read()})')
@@ -38,6 +40,7 @@ class SystemFiles:
 
     @staticmethod
     def sticker_for_post() -> tuple:
+        """Bot stickers in the post"""
         try:
             with open('sticker_for_post.spec') as sticker_for_post:
                 return literal_eval(f'({sticker_for_post.read()})')
@@ -46,6 +49,7 @@ class SystemFiles:
 
     @staticmethod
     def conversation_reading() -> dict:
+        """Bot answer function"""
         try:
             with open('conversation.spec', encoding='utf-8') as conversation:
                 return literal_eval('{' + conversation.read() + '}')
@@ -54,15 +58,9 @@ class SystemFiles:
 
     @staticmethod
     def conversation_for_post() -> tuple:
+        """Bot conversation in the post"""
         try:
             with open('conversation_for_post.spec', encoding='utf-8') as conversation_for_post:
                 return literal_eval(f'({conversation_for_post.read()})')
         except (FileNotFoundError, IndexError):
             pass
-
-    @staticmethod
-    def img_format(image) -> str:
-        """Format of image delete function"""
-        if str(image).endswith("jpeg"):
-            return str(image[7:-5])
-        return str(image[7:-4])

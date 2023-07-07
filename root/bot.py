@@ -1,4 +1,5 @@
 from os import listdir
+from pathlib import Path
 from asyncio import sleep
 from random import randint
 from ast import literal_eval
@@ -72,9 +73,9 @@ def handlers_register(dp: Dispatcher) -> None:
     async def word_write(message: types.Message, state: FSMContext) -> None:
         """Obscene word write function"""
         async with state.proxy() as data:
-            data["range_value"] = message.text.lower()
+            data["add_word"] = message.text.lower()
             with open(f'chats/{message.chat.id}.spec', 'a') as obscene_words_write:
-                obscene_words_write.write(f' "{data["range_value"]}",')
+                obscene_words_write.write(f' "{data["add_word"]}",')
             await message.reply(text="Слово добавлено в чёрный список!")
         await state.finish()
         await message.delete()
@@ -113,13 +114,13 @@ def handlers_register(dp: Dispatcher) -> None:
             except ValueError:
                 pass
             try:
-                image = f"images/{image_list[randint(0, len(catalog) - 1)]}"
+                image = Path(f"images/{image_list[randint(0, len(catalog) - 1)]}")
                 await sleep(seconds_list[randint(0, 5)])
                 await message.bot.send_photo(
                     chat_id=message.chat.id,
                     disable_notification=True,
                     photo=open(image, "rb"),
-                    caption=sf.img_format(image)
+                    caption=image.stem
                 )
             except ValueError:
                 pass
