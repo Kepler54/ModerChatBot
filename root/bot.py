@@ -1,9 +1,9 @@
 from os import listdir
 from pathlib import Path
 from asyncio import sleep
-from random import randint
 from ast import literal_eval
 from aiohttp import ClientOSError
+from random import randint, choice
 from keyboards import KeyboardRandom
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -17,12 +17,6 @@ from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, \
 sf = SystemFiles()
 kr = KeyboardRandom()
 usg = UserStatesGroup()
-
-seconds_list = [17634, 21138, 24895, 28325, 32178, 35728]
-image_list = []
-catalog = listdir("images/")
-for img in catalog:
-    image_list.append(img)
 
 
 def handlers_register(dp: Dispatcher) -> None:
@@ -103,38 +97,61 @@ def handlers_register(dp: Dispatcher) -> None:
     async def get_post(message: types.Message) -> None:
         """A new post function"""
         await message.delete()
+
+        seconds_list = [17634, 21138, 24895, 28325, 32178, 35728]
+        image_list = []
+        sticker_list = []
+        conversation_list = []
+
         while True:
+
             try:
+                sticker = choice(sf.sticker_for_post())
                 await sleep(1)
-                await message.bot.send_sticker(
-                    chat_id=message.chat.id,
-                    disable_notification=True,
-                    sticker=sf.sticker_for_post()[randint(0, len(sf.sticker_for_post()) - 1)]
-                )
-            except ValueError:
-                pass
-            try:
-                image = Path(f"images/{image_list[randint(0, len(catalog) - 1)]}")
-                await sleep(seconds_list[randint(0, 5)])
-                await message.bot.send_photo(
-                    chat_id=message.chat.id,
-                    disable_notification=True,
-                    photo=open(image, "rb"),
-                    caption=image.stem
-                )
-            except ValueError:
-                pass
-            try:
-                await sleep(seconds_list[randint(0, 5)])
-                await message.bot.send_message(
-                    chat_id=message.chat.id,
-                    disable_notification=True,
-                    text=sf.conversation_for_post()[randint(0, len(sf.conversation_for_post()) - 1)]
-                )
+                if sticker not in sticker_list:
+                    await message.bot.send_sticker(
+                        chat_id=message.chat.id,
+                        disable_notification=True,
+                        sticker=sticker
+                    )
+                sticker_list.append(sticker)
+                if len(sticker_list) == len(sf.sticker_for_post()):
+                    sticker_list.clear()
             except ValueError:
                 pass
 
-            await sleep(seconds_list[randint(0, 5)])
+            try:
+                image = Path(f"images/{choice(listdir('images/'))}")
+                await sleep(choice(seconds_list))
+                if image.stem not in image_list:
+                    await message.bot.send_photo(
+                        chat_id=message.chat.id,
+                        disable_notification=True,
+                        photo=open(image, "rb"),
+                        caption=image.stem
+                    )
+                image_list.append(image.stem)
+                if len(image_list) == len(listdir('images/')):
+                    image_list.clear()
+            except ValueError:
+                pass
+
+            try:
+                cnvr = choice(sf.conversation_for_post())
+                await sleep(choice(seconds_list))
+                if cnvr not in conversation_list:
+                    await message.bot.send_message(
+                        chat_id=message.chat.id,
+                        disable_notification=True,
+                        text=cnvr
+                    )
+                conversation_list.append(cnvr)
+                if conversation_list == len(sf.conversation_for_post()):
+                    conversation_list.clear()
+            except ValueError:
+                pass
+
+            await sleep(choice(seconds_list))
 
     @dp.message_handler(ReplyChatFilter(), content_types="sticker")
     async def sticker_from_user(message: types.Message) -> None:
