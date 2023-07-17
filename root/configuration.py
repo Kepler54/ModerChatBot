@@ -6,6 +6,8 @@ class UserStatesGroup(StatesGroup):
     """User state machine"""
     range_value = State()
     add_word = State()
+    user_name = State()
+    user_message = State()
 
 
 class SystemFiles:
@@ -18,7 +20,7 @@ class SystemFiles:
                "/help — информация\n" \
                "/random — случайное число\n" \
                "/post — активация постов\n" \
-               "кубик — игральная кость\n" \
+               "/feedback — обратная связь\n" \
                "\nФункции чата:\n" \
                "\n/word — добавить слово в чс\n" \
                "#ban — забанить кого-то\n"
@@ -26,7 +28,7 @@ class SystemFiles:
     @staticmethod
     def obscene_words_answer() -> tuple:
         """Bot random answer function"""
-        answer_list = ("А?", "ШО?", "САМ!", "ИЗВИНИСЬ!", "ТЮ МЛЯ!", "ДА ТЫ ШО!")
+        answer_list = ("А?", "Шо?", "Ну ну!", "Извинись!", "Тю мля!", "Да ты шо!", "Тю!", "Парируй!")
         return answer_list
 
     @staticmethod

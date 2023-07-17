@@ -2,9 +2,12 @@ from os import getenv
 from asyncio import run
 from dotenv import load_dotenv
 from bot import handlers_register
+from sqlite import DataBaseFeedback
 from aiogram import Bot, Dispatcher
 from logging import basicConfig, INFO
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
+dbf = DataBaseFeedback()
 
 
 def register(dp: Dispatcher) -> None:
@@ -21,6 +24,7 @@ async def main() -> None:
     dp = Dispatcher(bot=bot, storage=storage)
     register(dp)
 
+    await dbf.db_start()
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling()
 

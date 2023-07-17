@@ -4,6 +4,7 @@ from asyncio import sleep
 from ast import literal_eval
 from aiohttp import ClientOSError
 from random import randint, choice
+from sqlite import DataBaseFeedback
 from keyboards import KeyboardRandom
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
@@ -17,6 +18,7 @@ from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, \
 sf = SystemFiles()
 kr = KeyboardRandom()
 usg = UserStatesGroup()
+dbf = DataBaseFeedback()
 
 
 def handlers_register(dp: Dispatcher) -> None:
@@ -37,7 +39,7 @@ def handlers_register(dp: Dispatcher) -> None:
     async def help_me(message: types.Message) -> None:
         """Help"""
         await message.reply(sf.help_list())
-        await message.reply("Ответьте хэштегом #ban на сообщение пользователя, которого хотите забанить.")
+        await message.reply("Ответь хэштегом #ban на сообщение пользователя, которого надо забанить.")
 
     @dp.message_handler(commands=["random"])
     async def random_value(message: types.Message) -> None:
@@ -74,6 +76,30 @@ def handlers_register(dp: Dispatcher) -> None:
         await state.finish()
         await message.delete()
 
+    @dp.message_handler(commands=["feedback"])
+    async def start(message: types.Message) -> None:
+        """Call feedback function"""
+        await dbf.create_feedback(user_id=message.from_user.id)
+        await message.reply(text="Введи свой email:", reply_markup=kr.inline_keyboard)
+        await usg.user_name.set()
+
+    @dp.message_handler(state=usg.user_name)
+    async def create_user_name(message: types.Message, state: FSMContext) -> None:
+        """Create name of user function"""
+        async with state.proxy() as data:
+            data['email'] = message.text
+            await message.reply(text="Введи своё сообщение:", reply_markup=kr.inline_keyboard)
+            await UserStatesGroup.next()
+
+    @dp.message_handler(state=usg.user_message)
+    async def create_user_message(message: types.Message, state: FSMContext) -> None:
+        """Create user message function"""
+        async with state.proxy() as data:
+            data['message'] = message.text
+        await dbf.edit_feedback(state, user_id=message.from_user.id)
+        await message.reply("Спасибо за обращение! Постараюсь ответить в ближайшее время!")
+        await state.finish()
+
     @dp.callback_query_handler(text="close", state="*")
     async def callback_cancel(callback: types.CallbackQuery, state: FSMContext) -> None:
         """Callback cancel function"""
@@ -106,31 +132,31 @@ def handlers_register(dp: Dispatcher) -> None:
         while True:
 
             try:
-                sticker = choice(sf.sticker_for_post())
+                stcr = choice(sf.sticker_for_post())
                 await sleep(1)
-                if sticker not in sticker_list:
+                if stcr not in sticker_list:
+                    sticker_list.append(stcr)
                     await message.bot.send_sticker(
                         chat_id=message.chat.id,
                         disable_notification=True,
-                        sticker=sticker
+                        sticker=stcr
                     )
-                sticker_list.append(sticker)
                 if len(sticker_list) == len(sf.sticker_for_post()):
                     sticker_list.clear()
             except ValueError:
                 pass
 
             try:
-                image = Path(f"images/{choice(listdir('images/'))}")
+                img = Path(f"images/{choice(listdir('images/'))}")
                 await sleep(choice(seconds_list))
-                if image.stem not in image_list:
+                if img.stem not in image_list:
+                    image_list.append(img.stem)
                     await message.bot.send_photo(
                         chat_id=message.chat.id,
                         disable_notification=True,
-                        photo=open(image, "rb"),
-                        caption=image.stem
+                        photo=open(img, "rb"),
+                        caption=img.stem
                     )
-                image_list.append(image.stem)
                 if len(image_list) == len(listdir('images/')):
                     image_list.clear()
             except ValueError:
@@ -140,12 +166,12 @@ def handlers_register(dp: Dispatcher) -> None:
                 cnvr = choice(sf.conversation_for_post())
                 await sleep(choice(seconds_list))
                 if cnvr not in conversation_list:
+                    conversation_list.append(cnvr)
                     await message.bot.send_message(
                         chat_id=message.chat.id,
                         disable_notification=True,
                         text=cnvr
                     )
-                conversation_list.append(cnvr)
                 if conversation_list == len(sf.conversation_for_post()):
                     conversation_list.clear()
             except ValueError:
