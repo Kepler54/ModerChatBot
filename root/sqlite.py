@@ -5,11 +5,10 @@ class DataBaseFeedback:
     @staticmethod
     async def db_start():
         global db, cur
-
-        db = sq.connect("feedback.db")
-        cur = db.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS profile(user_id TEXT PRIMARY KEY, email TEXT, message TEXT)")
-        db.commit()
+        with sq.connect("feedback.db") as db:
+            cur = db.cursor()
+            cur.execute("CREATE TABLE IF NOT EXISTS profile(user_id TEXT PRIMARY KEY, email TEXT, message TEXT)")
+            db.commit()
 
     @staticmethod
     async def create_feedback(user_id):

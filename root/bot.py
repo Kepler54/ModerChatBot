@@ -5,18 +5,17 @@ from ast import literal_eval
 from aiohttp import ClientOSError
 from random import randint, choice
 from sqlite import DataBaseFeedback
-from keyboards import KeyboardRandom
+from keyboards import KeyboardClose
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from asyncio.exceptions import TimeoutError
 from configuration import SystemFiles, UserStatesGroup
-from filters import ReplyChatFilter, CreatorAdminFilter, IntegerFilter
-from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, \
-    MessageToDeleteNotFound, NetworkError, MessageNotModified, RetryAfter, \
-    MessageCantBeDeleted, BadRequest, Unauthorized, ChatAdminRequired, TelegramAPIError
+from filters import ReplyChatFilter, CreatorAdminFilter, IntegerFilter, PrivateMessageFilter
+from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, MessageToDeleteNotFound, NetworkError, \
+    MessageNotModified, RetryAfter, MessageCantBeDeleted, BadRequest, Unauthorized, ChatAdminRequired, TelegramAPIError
 
 sf = SystemFiles()
-kr = KeyboardRandom()
+kr = KeyboardClose()
 usg = UserStatesGroup()
 dbf = DataBaseFeedback()
 
@@ -38,7 +37,7 @@ def handlers_register(dp: Dispatcher) -> None:
     @dp.message_handler(commands=["help"])
     async def help_me(message: types.Message) -> None:
         """Help"""
-        await message.reply(sf.help_list())
+        await message.reply(sf.help_list(), parse_mode="HTML")
         await message.reply("Ответь хэштегом #ban на сообщение пользователя, которого надо забанить.")
 
     @dp.message_handler(commands=["random"])
@@ -76,19 +75,24 @@ def handlers_register(dp: Dispatcher) -> None:
         await state.finish()
         await message.delete()
 
-    @dp.message_handler(commands=["feedback"])
+    @dp.message_handler(PrivateMessageFilter(), commands=["feedback"])
     async def start(message: types.Message) -> None:
         """Call feedback function"""
         await dbf.create_feedback(user_id=message.from_user.id)
-        await message.reply(text="Введи свой email:", reply_markup=kr.inline_keyboard)
+        await message.bot.send_message(
+            message.from_user.id, text="Введи свой email:", reply_markup=kr.inline_keyboard
+        )
         await usg.user_name.set()
+        await message.delete()
 
     @dp.message_handler(state=usg.user_name)
     async def create_user_name(message: types.Message, state: FSMContext) -> None:
         """Create name of user function"""
         async with state.proxy() as data:
             data['email'] = message.text
-            await message.reply(text="Введи своё сообщение:", reply_markup=kr.inline_keyboard)
+            await message.bot.send_message(
+                message.from_user.id, text="Введи своё сообщение:", reply_markup=kr.inline_keyboard
+            )
             await UserStatesGroup.next()
 
     @dp.message_handler(state=usg.user_message)
@@ -97,7 +101,9 @@ def handlers_register(dp: Dispatcher) -> None:
         async with state.proxy() as data:
             data['message'] = message.text
         await dbf.edit_feedback(state, user_id=message.from_user.id)
-        await message.reply("Спасибо за обращение! Постараюсь ответить в ближайшее время!")
+        await message.bot.send_message(
+            message.from_user.id, "Спасибо за обращение! Постараюсь ответить в ближайшее время!"
+        )
         await state.finish()
 
     @dp.callback_query_handler(text="close", state="*")
@@ -113,7 +119,9 @@ def handlers_register(dp: Dispatcher) -> None:
         """Ban function"""
         await message.bot.delete_message(message.chat.id, message.message_id)
         try:
-            await message.bot.kick_chat_member(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id)
+            await message.bot.kick_chat_member(
+                chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id
+            )
             await message.reply_to_message.reply("БАН!")
             await message.bot.send_sticker(chat_id=message.chat.id, sticker=sf.sticker_reading()[0])
         except (CantRestrictSelf, ChatAdminRequired, IndexError):

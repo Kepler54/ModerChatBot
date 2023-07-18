@@ -1,12 +1,13 @@
 from aiogram import types
-from keyboards import KeyboardRandom
+from keyboards import KeyboardClose
 from aiogram.dispatcher.filters import BoundFilter
 
-kr = KeyboardRandom()
+kr = KeyboardClose()
 
 
 class CreatorAdminFilter(BoundFilter):
     """Filtering of the creator or admin user"""
+
     key = 'creator'
 
     def __init__(self, creator):
@@ -44,3 +45,11 @@ class IntegerFilter(BoundFilter):
                 text=f'"{message.text}" — НЕ ЩИТАИТСЯ! НУЖНО ВВЕСТИ ЦЕЛОЕ ЧИСЛО!',
                 reply_markup=kr.inline_keyboard
             )
+
+
+class PrivateMessageFilter(BoundFilter):
+    """The message should be only private"""
+
+    async def check(self, message: types.Message) -> bool:
+        if message.from_user.id == message.chat.id:
+            return True

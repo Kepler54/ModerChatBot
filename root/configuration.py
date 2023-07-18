@@ -15,15 +15,16 @@ class SystemFiles:
 
     @staticmethod
     def help_list() -> str:
-        return "Функции пользователя и чата:\n" \
-               "\n/start — начало работы\n" \
-               "/help — информация\n" \
-               "/random — случайное число\n" \
-               "/post — активация постов\n" \
-               "/feedback — обратная связь\n" \
-               "\nФункции чата:\n" \
-               "\n/word — добавить слово в чс\n" \
-               "#ban — забанить кого-то\n"
+        return "<b>Функции пользователя и чата:</b>\n" \
+               "\n<em>/start — начало работы</em>\n" \
+               "<em>/help — информация</em>\n" \
+               "<em>/random — случайное число</em>\n" \
+               "\n<b>Функции пользователя:</b>\n" \
+               "\n<em>/feedback — обратная связь</em>\n" \
+               "\n<b>Функции чата:</b>\n" \
+               "\n<em>/word — добавить слово в чс</em>\n" \
+               "\n<em>/post — активация постов</em>\n" \
+               "<em>#ban — забанить кого-то</em>\n"
 
     @staticmethod
     def obscene_words_answer() -> tuple:
