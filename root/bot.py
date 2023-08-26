@@ -15,11 +15,16 @@ from filters import ReplyChatFilter, CreatorAdminFilter, \
 from aiogram.utils.exceptions import BotBlocked, CantRestrictSelf, MessageToDeleteNotFound, NetworkError, \
     MessageNotModified, RetryAfter, MessageCantBeDeleted, BadRequest, Unauthorized, ChatAdminRequired, TelegramAPIError
 
-switch = True
 sf = SystemFiles()
 kr = KeyboardClose()
 usg = UserStatesGroup()
 dbf = DataBaseFeedback()
+
+switch = True
+sticker_list = []
+image_list = []
+conversation_list = []
+audio_list = []
 
 
 def handlers_register(dp: Dispatcher) -> None:
@@ -188,6 +193,12 @@ def handlers_register(dp: Dispatcher) -> None:
         """Switch function"""
         global switch
         switch = False
+
+        sticker_list.clear()
+        image_list.clear()
+        conversation_list.clear()
+        audio_list.clear()
+
         await message.bot.send_message(
             message.chat.id,
             text="Команда /post остановлена!",
@@ -202,11 +213,7 @@ def handlers_register(dp: Dispatcher) -> None:
         switch = True
         await message.delete()
 
-        seconds_list = [1, 1, 1, 1, 1, 1]
-        image_list = []
-        sticker_list = []
-        conversation_list = []
-        audio_list = []
+        seconds_list = [17634, 21138, 24895, 28325, 32178, 35728]
 
         while switch:
 

@@ -28,7 +28,9 @@ class SystemFiles:
                "<em>/ban — забанить кого-то</em>\n" \
                "\nОтветь командой /ban на сообщение пользователя, которого хочешь забанить\n" \
                "\n<b>Функции пользователя:</b>\n" \
-               "\n<em>/feedback — обратная связь</em>\n"
+               "\n<em>/feedback — обратная связь</em>\n" \
+               "\n<b>Поддержать автора в Bitcoin:</b>\n" \
+               "\nbc1qewfgtrrg2gqgtvzl5d2pr9pte685pp5n3g6scy"
 
     @staticmethod
     def obscene_words_answer() -> tuple:
