@@ -18,8 +18,8 @@ async def main() -> None:
     """Entry point"""
     basicConfig(level=INFO)
     load_dotenv('.env')
-    token = getenv('token')
-    bot = Bot(token)  # , proxy='http://proxy.server:3128'
+    BOT_TOKEN = getenv('BOT_TOKEN')
+    bot = Bot(BOT_TOKEN)  # , proxy='http://proxy.server:3128'
     storage = MemoryStorage()
     dp = Dispatcher(bot=bot, storage=storage)
     register(dp)
