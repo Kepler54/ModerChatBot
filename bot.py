@@ -227,8 +227,10 @@ def handlers_register(dp: Dispatcher) -> None:
                         disable_notification=True,
                         sticker=st
                     )
-                if len(sticker_list) == len(sf.sticker_for_post()):
-                    sticker_list.clear()
+                    if len(sticker_list) == len(sf.sticker_for_post()):
+                        sticker_list.clear()
+                else:
+                    continue
             except ValueError:
                 pass
 
@@ -243,8 +245,10 @@ def handlers_register(dp: Dispatcher) -> None:
                         photo=open(img, "rb"),
                         caption=img.stem
                     )
-                if len(image_list) == len(listdir('images/')):
-                    image_list.clear()
+                    if len(image_list) == len(listdir('images/')):
+                        image_list.clear()
+                else:
+                    continue
             except IndexError:
                 pass
 
@@ -258,8 +262,10 @@ def handlers_register(dp: Dispatcher) -> None:
                         disable_notification=True,
                         text=con
                     )
-                if conversation_list == len(sf.conversation_for_post()):
-                    conversation_list.clear()
+                    if conversation_list == len(sf.conversation_for_post()):
+                        conversation_list.clear()
+                else:
+                    continue
             except ValueError:
                 pass
 
@@ -272,8 +278,10 @@ def handlers_register(dp: Dispatcher) -> None:
                         chat_id=message.chat.id,
                         audio=open(audio, "rb"),
                         disable_notification=True)
-                if len(audio_list) == len(listdir('audio/')):
-                    audio_list.clear()
+                    if len(audio_list) == len(listdir('audio/')):
+                        audio_list.clear()
+                else:
+                    continue
             except IndexError:
                 pass
 
